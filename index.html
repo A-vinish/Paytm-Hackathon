@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Paytm — UPI + Wallet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app.css"/>
+<link rel="stylesheet" href="components.css"/>
+<link rel="stylesheet" href="screens.css"/>
+</head>
+<body class="light">
+
+<!-- ═══════════════════════════════════════════
+     ONBOARDING OVERLAY
+════════════════════════════════════════════ -->
+<div id="onboarding" class="onboarding-overlay">
+  <div class="onboarding-card">
+    <div class="ob-logo"><span class="ob-p">p</span>aytm</div>
+    <div class="ob-step active" id="ob1">
+      <h2>Welcome to<br><span class="blue">Paytm Copilot</span></h2>
+      <p>Your AI-powered payment assistant. Let's personalize your experience.</p>
+      <div class="ob-field">
+        <label>Your name</label>
+        <input type="text" id="obName" placeholder="e.g. Avinish" maxlength="20"/>
+      </div>
+      <div class="ob-field">
+        <label>Starting wallet balance (₹)</label>
+        <input type="number" id="obBalance" placeholder="e.g. 5000" value="5000"/>
+      </div>
+      <button class="ob-btn" onclick="obNext()">Continue →</button>
+    </div>
+    <div class="ob-step" id="ob2">
+      <div class="ob-icon-big">🤖</div>
+      <h2>Meet your <span class="blue">Copilot</span></h2>
+      <p>Copilot watches your payments in real-time and steps in when it matters — splits, fraud, voice commands and reminders.</p>
+      <div class="ob-features">
+        <div class="ob-feat"><span>💸</span><span>Detects hesitation &amp; suggests splits</span></div>
+        <div class="ob-feat"><span>🛡</span><span>Flags fraud before you lose money</span></div>
+        <div class="ob-feat"><span>🎙</span><span>Voice commands in English &amp; Hindi</span></div>
+        <div class="ob-feat"><span>🔔</span><span>Tracks bills &amp; reminds on due dates</span></div>
+      </div>
+      <button class="ob-btn" onclick="obFinish()">Let's go →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════ -->
+<div id="app" class="app hidden">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span class="sb-time" id="sbTime">9:41</span>
+    <span class="sb-right">
+      <svg width="15" height="11" viewBox="0 0 15 11"><rect x="0" y="4" width="3" height="7" rx="1" fill="currentColor" opacity=".4"/><rect x="4" y="2.5" width="3" height="8.5" rx="1" fill="currentColor" opacity=".6"/><rect x="8" y="1" width="3" height="10" rx="1" fill="currentColor" opacity=".8"/><rect x="12" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+      <svg width="16" height="11" viewBox="0 0 16 11" style="margin-left:4px"><rect x="0" y="0" width="13" height="11" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="1.5" y="1.5" width="8" height="8" rx="1" fill="currentColor" id="battFill"/><rect x="13.5" y="3.5" width="2" height="4" rx="1" fill="currentColor" opacity=".5"/></svg>
+    </span>
+  </div>
+
+  <!-- ── SCREEN: HOME ── -->
+  <div class="screen active" id="scrHome">
+    <div class="home-header">
+      <div class="home-greeting">
+        <div class="home-avatar" id="homeAvatar">A</div>
+        <div>
+          <div class="home-hi" id="homeHi">Good morning, Avinish 👋</div>
+          <div class="home-upi">avinish@paytm</div>
+        </div>
+      </div>
+      <div class="home-actions-top">
+        <button class="icon-btn" onclick="toggleDark()" title="Dark mode"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></button>
+        <button class="icon-btn notif-btn" onclick="showNotifPanel()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span class="notif-badge" id="notifBadge">3</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- WALLET CARD -->
+    <div class="wallet-card">
+      <div class="wc-top">
+        <div>
+          <div class="wc-label">Paytm Wallet</div>
+          <div class="wc-amount" id="walletDisplay">₹5,000</div>
+        </div>
+        <div class="wc-logo">paytm</div>
+      </div>
+      <div class="wc-bottom">
+        <div class="wc-upi">avinish@paytm</div>
+        <div class="wc-cashback">💎 ₹<span id="cashbackAmt">124</span> cashback this month</div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+      <div class="qa-item" onclick="navTo('scrSend')">
+        <div class="qa-icon qa-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+        <span>Send</span>
+      </div>
+      <div class="qa-item" onclick="navTo('scrReceive')">
+        <div class="qa-icon qa-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div>
+        <span>Receive</span>
+      </div>
+      <div class="qa-item" onclick="navTo('scrHistory')">
+        <div class="qa-icon qa-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
+        <span>History</span>
+      </div>
+      <div class="qa-item" onclick="navTo('scrInsights')">
+        <div class="qa-icon qa-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></div>
+        <span>Insights</span>
+      </div>
+    </div>
+
+    <!-- COPILOT BANNER -->
+    <div class="copilot-banner" id="copilotBanner">
+      <div class="cb-left">
+        <div class="cb-ai-dot"></div>
+        <div>
+          <div class="cb-title">✦ Copilot is active</div>
+          <div class="cb-sub" id="cbSub">Watching your payments in real-time</div>
+        </div>
+      </div>
+      <button class="cb-dismiss" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+
+    <!-- REMINDERS SECTION -->
+    <div class="section-header">
+      <span class="sh-title">📅 Upcoming Bills</span>
+      <button class="sh-more" onclick="navTo('scrCalendar')">Calendar →</button>
+    </div>
+    <div id="remindersHome"></div>
+
+    <!-- SPENDING PREVIEW -->
+    <div class="section-header" style="margin-top:8px">
+      <span class="sh-title">📊 This Week</span>
+      <button class="sh-more" onclick="navTo('scrInsights')">Full Report →</button>
+    </div>
+    <div class="spending-preview" onclick="navTo('scrInsights')">
+      <div class="sp-bar-row" id="spendPreview"></div>
+      <div class="sp-tip" id="spendTip">Loading insights...</div>
+    </div>
+
+    <!-- RECENT TRANSACTIONS -->
+    <div class="section-header" style="margin-top:8px">
+      <span class="sh-title">🕐 Recent</span>
+      <button class="sh-more" onclick="navTo('scrHistory')">All →</button>
+    </div>
+    <div id="recentTxns"></div>
+  </div>
+
+  <!-- ── SCREEN: SEND MONEY ── -->
+  <div class="screen" id="scrSend">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span>Send Money</span>
+      <button class="icon-btn" onclick="startVoice()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08C16.39 17.43 19 14.53 19 11h-2z"/></svg></button>
+    </div>
+
+    <!-- VOICE STRIP -->
+    <div class="voice-strip hidden" id="voiceStrip">
+      <div class="vs-inner">
+        <div class="vs-waves"><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="vs-txt" id="vsTxt">Listening...</div>
+        <div class="vs-lang">
+          <button class="lang-btn active" onclick="setLang('en')">EN</button>
+          <button class="lang-btn" onclick="setLang('hi')">HI</button>
+          <button class="lang-btn" onclick="setLang('ta')">TA</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEND FORM -->
+    <div class="send-form" id="sendForm">
+      <div class="sf-field">
+        <label>Pay to (Name or UPI ID)</label>
+        <input type="text" id="sfName" placeholder="Name, UPI ID or phone"
+          oninput="onSendInput()" autocomplete="off"/>
+        <div class="sf-suggestions hidden" id="sfSuggestions"></div>
+      </div>
+      <div class="sf-field">
+        <label>UPI ID</label>
+        <div class="upi-field-wrap">
+          <input type="text" id="sfUPI" placeholder="name@paytm"
+            oninput="onUPIInput()" autocomplete="off"/>
+          <div class="upi-rep hidden" id="upiRep"></div>
+        </div>
+      </div>
+      <div class="sf-field">
+        <label>Amount (₹)</label>
+        <div class="amt-input-wrap">
+          <span class="amt-prefix">₹</span>
+          <input type="number" id="sfAmt" placeholder="0"
+            oninput="onAmtInput()" onfocus="startDwellTimer()"/>
+        </div>
+        <div class="amt-risk-bar"><div class="arb-fill" id="amtRiskBar"></div></div>
+        <div class="amt-risk-label" id="amtRiskLabel"></div>
+      </div>
+      <div class="sf-field">
+        <label>Note (optional)</label>
+        <input type="text" id="sfNote" placeholder="What's this for?"/>
+      </div>
+
+      <!-- CASHBACK SUGGESTER -->
+      <div class="cashback-strip hidden" id="cashbackStrip"></div>
+
+      <!-- FRAUD PANEL -->
+      <div class="fraud-panel hidden" id="fraudPanel"></div>
+
+      <!-- COPILOT THINKING -->
+      <div class="copilot-thinking hidden" id="cpThinking">
+        <div class="ct-dots"><span></span><span></span><span></span></div>
+        <span class="ct-txt">Copilot analysing...</span>
+      </div>
+
+      <button class="pay-btn-main" id="payBtn" onclick="initiatePay()">
+        <span>Pay Now</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+
+    <!-- DWELL SPLIT SUGGESTION -->
+    <div class="dwell-popup hidden" id="dwellPopup">
+      <div class="dp-handle"></div>
+      <div class="dp-ai"><div class="dp-ai-dot"></div><span>✦ Copilot</span></div>
+      <div class="dp-title">Want to split this? 💸</div>
+      <div class="dp-sub">You've been on this screen for a while. I can split <strong id="dpAmt">₹0</strong> with your friends — you pay only your share now.</div>
+      <div class="dp-btns">
+        <button class="dp-no" onclick="closeDwellPopup(false)">No, pay full</button>
+        <button class="dp-yes" onclick="closeDwellPopup(true)">✦ Split it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: SPLIT ── -->
+  <div class="screen" id="scrSplit">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span>Bill Split</span>
+      <span></span>
+    </div>
+    <div class="split-screen" id="splitScreen"></div>
+  </div>
+
+  <!-- ── SCREEN: SETTLE UP ── -->
+  <div class="screen" id="scrSettle">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span>Settle Up</span>
+      <span></span>
+    </div>
+    <div class="settle-screen" id="settleScreen"></div>
+  </div>
+
+  <!-- ── SCREEN: RECEIVE ── -->
+  <div class="screen" id="scrReceive">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span>Receive Money</span>
+      <span></span>
+    </div>
+    <div class="receive-screen">
+      <div class="qr-container">
+        <div class="qr-box" id="qrCode"></div>
+        <div class="qr-upi" id="qrUPI">avinish@paytm</div>
+        <div class="qr-name" id="qrName">Avinish</div>
+      </div>
+      <button class="share-btn">📤 Share UPI ID</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: HISTORY ── -->
+  <div class="screen" id="scrHistory">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span>Transaction History</span>
+      <span></span>
+    </div>
+    <div class="history-screen" id="historyScreen"></div>
+  </div>
+
+  <!-- ── SCREEN: INSIGHTS ── -->
+  <div class="screen" id="scrInsights">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span>Spending Insights</span>
+      <span></span>
+    </div>
+    <div class="insights-screen" id="insightsScreen"></div>
+  </div>
+
+  <!-- ── SCREEN: CALENDAR ── -->
+  <div class="screen" id="scrCalendar">
+    <div class="screen-header">
+      <button class="back-btn" onclick="navBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <span>Bill Calendar</span>
+      <span></span>
+    </div>
+    <div class="calendar-screen" id="calendarScreen"></div>
+  </div>
+
+  <!-- ── SCREEN: PAYMENT SUCCESS ── -->
+  <div class="screen" id="scrSuccess">
+    <div class="success-screen" id="successScreen"></div>
+  </div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div class="notif-panel hidden" id="notifPanel">
+    <div class="np-header">
+      <span>Notifications</span>
+      <button onclick="hideNotifPanel()">×</button>
+    </div>
+    <div id="notifList"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bn-item active" onclick="navTo('scrHome')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Home</span>
+    </div>
+    <div class="bn-item" onclick="navTo('scrSend')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      <span>Pay</span>
+    </div>
+    <div class="bn-item bn-center" onclick="navTo('scrSend')">
+      <div class="bn-fab">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </div>
+    </div>
+    <div class="bn-item" onclick="navTo('scrInsights')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+      <span>Insights</span>
+    </div>
+    <div class="bn-item" onclick="navTo('scrHistory')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+      <span>History</span>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- SECURITY ALERT MODAL -->
+<div class="modal-overlay hidden" id="securityModal">
+  <div class="modal-box" id="securityModalBox"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="state.js"></script>
+<script src="ui.js"></script>
+<script src="send.js"></script>
+<script src="split.js"></script>
+<script src="voice.js"></script>
+<script src="insights.js"></script>
+<script src="reminders.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
